@@ -6,3 +6,22 @@ Adversarial training (AT) is one of the most effective ways for deep neural netw
 
 ## Requirements
 Python3、Pytorch1.81、numpy
+
+## Train for TSAT
+- On CIFAR10
+
+  ``
+  python TSAT.py --batch_size 128 --data_type cifar10 --model_type PreActResNet18 
+  ``
+
+- On CIFAR100
+
+  ``
+  python TSAT.py --batch_size 128 --data_type cifar100 --model_type PreActResNet18 
+  ``
+
+  - On Tiny-ImageNet
+ 
+  ``
+  python TSAT_tiny.py --batch_size 128 --model_type PreActResNet18 
+  ``
