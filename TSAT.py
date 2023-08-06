@@ -98,15 +98,12 @@ def adaptive_binary(img_tensor):
 
 def mask_label(images,labels,delta,lamda1):
     batch,kernal,H,W = images.shape
-
-    # 定义0和1出现的概率，这里假设0出现的概率为0.7，1出现的概率为0.3
     if(epoch<150):
         mask = adaptive_binary(images)
     else:
         probs = torch.rand((args.batch_size,))
         probs = probs.view((args.batch_size, 1, 1, 1)).expand((args.batch_size, 1, H, W))
         mask = torch.bernoulli(probs) #128 1 32 32
-
 
     mask = mask.to(device)
     lamda1_hat = torch.sum(mask.squeeze(1),dim = [1,2])/(H*W)
@@ -272,10 +269,7 @@ if resume is not None:
     model.load_state_dict(checkpoint['model'])
     start_epoch = checkpoint['epoch'] + 1
     torch.set_rng_state(checkpoint['rng_state'])
-
-
-
-    
+ 
 for epoch in range(start_epoch, args.epoch_num):
     adjust_learning_rate(optimizer, epoch)
     time1 = time.time()
