@@ -6,7 +6,6 @@ import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
 import torchvision
 from torchvision import datasets, transforms
-#import torchvision.transforms as transforms
 import math
 import os
 import random
@@ -16,7 +15,7 @@ import foolbox as fb
 import cv2 as cv
 from tqdm import tqdm
 from model_zoo import *
-from apex import amp
+from apex import amp  # accelarate with mixed precision training
 import matplotlib.pyplot as plt
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
@@ -76,18 +75,13 @@ def adaptive_binary(img_tensor):
     constant = 0.1
     sobel_x = torch.FloatTensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]).unsqueeze(0).unsqueeze(0).to(device)
     sobel_y = torch.FloatTensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]).unsqueeze(0).unsqueeze(0).to(device)
-    #print(img_tensor.shape)
     image_r, image_g, image_b = img_tensor.split(1, dim=1)
-    #print(image_r.shape)
     image_r=image_r.to(device)
 
 
     sobel_r_x = torch.nn.functional.conv2d(image_r, sobel_x, padding=1)
     sobel_r_y = torch.nn.functional.conv2d(image_r, sobel_y, padding=1)
     sobel_r = torch.sqrt(torch.pow(sobel_r_x, 2) + torch.pow(sobel_r_y, 2))
-    #fb.plot.images(sobel_r)
-    #print(sobel_r)
-    
     
     # 使用F.conv2d函数计算每个像素周围邻域的平均值
     # 首先定义一个均值滤波器，滤波器大小为block_size x block_size
@@ -100,69 +94,15 @@ def adaptive_binary(img_tensor):
     # 计算阈值并对图像进行二值化
     #threshold = (mean_img - constant).to(device)
     threshold = (mean_img).to(device) #batch * 1 * 32 * 32
-    '''
-    Max_T, _ = torch.max(threshold,dim=2)
-    Max_T, _ = torch.max(Max_T,dim=2)
-    Min_T, _ = torch.min(threshold,dim=2)
-    Min_T, _ = torch.min(Min_T,dim=2)
-    print(Max_T,Min_T)
-    a = torch.randn((Batch,1)).to(device)
-    threshold = Min_T+0.1+(Max_T-Min_T)*a
-    T = torch.zeros((image_r.shape)).to(device)
-    for i in range(Batch):
-        T[i,:,:,:] = threshold[i]
-    '''
+
     bin_img = torch.where(sobel_r >= threshold, torch.tensor(1.).to(device), torch.tensor(0.).to(device))
-    #print(bin_img.shape)
-    #a = random.uniform(0,1)
-    #if(a<0.1):
-        #bin_img = torch.zeros((sobel_r.shape))
 
     return bin_img
-
-def sobel_filter(image):
-    sobel_x = torch.FloatTensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]).unsqueeze(0).unsqueeze(0).to(device)
-    sobel_y = torch.FloatTensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]).unsqueeze(0).unsqueeze(0).to(device)
-    image_r, image_g, image_b = image.split(1, dim=1) #batch*kernel*H*W
-    #print(image_r.shape)
-
-    sobel_r_x = torch.nn.functional.conv2d(image_r, sobel_x, padding=1)
-    sobel_r_y = torch.nn.functional.conv2d(image_r, sobel_y, padding=1)
-    sobel_r = torch.sqrt(torch.pow(sobel_r_x, 2) + torch.pow(sobel_r_y, 2))
-
-    
-    sobel_g_x = torch.nn.functional.conv2d(image_g, sobel_x, padding=1)
-    sobel_g_y = torch.nn.functional.conv2d(image_g, sobel_y, padding=1)
-    sobel_g = torch.sqrt(torch.pow(sobel_g_x, 2) + torch.pow(sobel_g_y, 2))
-
-
-    sobel_b_x = torch.nn.functional.conv2d(image_b, sobel_x, padding=1)
-    sobel_b_y = torch.nn.functional.conv2d(image_b, sobel_y, padding=1)
-    sobel_b = torch.sqrt(torch.pow(sobel_b_x, 2) + torch.pow(sobel_b_y, 2))
-    
-    sobel_b[sobel_b > 1.5] = 1
-    sobel_b[sobel_b < 1.5] = 0
-    #fb.plot.images(sobel_b)
-
-
-    sobel_image = torch.cat([sobel_r, sobel_g, sobel_b], dim=1)
-    
-    return sobel_b
-
-
 
 def mask_label(images,labels,delta,lamda1):
     #每一批batch_size区域一样
     # labels是one-hot编码
     batch,kernal,H,W = images.shape
-    '''
-    rx1 = int(np.random.uniform(0,W))
-    rx2 = int(min(W,W*np.sqrt((1-lamda1))+rx1))
-    ry1 = int(np.random.uniform(0,H))
-    ry2 = int(min(H,H*np.sqrt((1-lamda1))+ry1))
-    mask = torch.zeros((batch,kernal,H,W))
-    mask[:,:,ry1:ry2,rx1:rx2] = 1
-    '''
     # 定义0和1出现的概率，这里假设0出现的概率为0.7，1出现的概率为0.3
     if(epoch<150):
         mask = adaptive_binary(images)
@@ -238,17 +178,6 @@ def train(epoch):
             x = torch.clamp(x, min=0.0, max=1.0)
         #delta = (x - inputs) * 2
         delta = x - inputs
-        '''
-        x_av = inputs + delta
-        x_av = x_av.clamp(min=0., max=1.)
-        y_nat = label_smoothing(onehot, 10, 0.5)
-        y_ver = label_smoothing(onehot, 10, 0.7)
-        #policy = np.random.beta(1.0, 1.0)
-        policy_x = torch.from_numpy(np.random.beta(1, 1, [x.size(0), 1, 1, 1])).float().to(device)
-        policy_y = policy_x.view(x.size(0), -1)
-        X = policy_x * inputs + (1 - policy_x) * x_av
-        Y = policy_y * y_nat + (1 - policy_y) * y_ver
-        '''
         
         
         #生成两种部分扰动样本和对应标签
@@ -309,9 +238,6 @@ def adjust_learning_rate(optimizer, epoch):
         
 Batch = 128  
 
-data = np.load('1m.npz')
-images_npz = data['image']
-labels_npz = data['label']
   
 transform_train = transforms.Compose([
     #transforms.RandomCrop(32, padding=4),
