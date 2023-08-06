@@ -36,7 +36,7 @@ def get_args():
     arguments = parser.parse_args()
     return arguments
 
-args = get_args
+args = get_args()
 
 
 class CustomLossFunction:
@@ -110,7 +110,7 @@ def mask_label(images,labels,delta,lamda1):
 
     mask = mask.to(device)
     lamda1_hat = torch.sum(mask.squeeze(1),dim = [1,2])/(H*W)
-    lamda1_hat = torch.reshape(lamda1_hat,(Batch,1)).repeat(1,num_classes)
+    lamda1_hat = torch.reshape(lamda1_hat,(args.batch_size,1)).repeat(1,num_classes)
     P_image = images + delta*mask
     P_image_reverse = images + delta*(1-mask)
     ti = lamda1_hat*labels+(1-lamda1_hat)*(1-labels)*(1/(labels.shape[1]-1))
@@ -237,7 +237,7 @@ transform_test = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-if args.data_tpye == 'cifar10':
+if args.data_type == 'cifar10':
     num_classes = 10
     trainset = torchvision.datasets.CIFAR10(root=args.data_dir, train=True, download=True, transform=transform_train)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, drop_last=True)
