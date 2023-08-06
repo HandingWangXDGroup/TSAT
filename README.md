@@ -20,7 +20,7 @@ Python3、Pytorch1.8.1、numpy
   python TSAT.py --batch_size 128 --data_type cifar100 --model_type PreActResNet18 
   ``
 
-  - On Tiny-ImageNet
+- On Tiny-ImageNet
  
   ``
   python TSAT_tiny.py --batch_size 128 --model_type PreActResNet18 
