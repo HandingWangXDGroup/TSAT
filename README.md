@@ -28,12 +28,12 @@ Python3、Pytorch1.8.1、numpy
 ## Test model
 - On CIFAR
 
-  ''
+  ``
   python evaluate.py --data_type cifar10 --model_path result/model_ResNet18_cifar10 --model ResNet18
-  ''
+  ``
 
 - On Tiny-ImageNet
 
-  ''
+  ``
   python evaluate_tiny.py --model_path result/model_ResNet18_cifar10 --model ResNet18
-  ''
+  ``
