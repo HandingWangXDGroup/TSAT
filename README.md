@@ -25,7 +25,7 @@ Python3、Pytorch1.8.1、numpy
   ``
   python TSAT_tiny.py --batch_size 128 --model_type PreActResNet18 --num_epoch 110
   ``
-## Train model
+## Test model
 - On CIFAR
 
   ''
