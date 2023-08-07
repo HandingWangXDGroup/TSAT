@@ -9,13 +9,13 @@ import os
 from TinyImageNet_utils import *
 from TinyImageNet_models import *
 
-device_ids = [0,2,3]
-torch.cuda.set_device(device_ids[0])
-#os.environ["CUDA_VISIBLE_DEVICES"] = '3'
+#device_ids = [0,2,3]
+#torch.cuda.set_device(device_ids[0])
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 # 设置参数
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_path', type=str, default='./TRADES_tiny_preact/model_preact.13', help='model path')
-#parser.add_argument('--model', type=str, default='WideResNet', help='model path')
+parser.add_argument('--model', type=str, default='WideResNet', help='model path')
 parser.add_argument('--batch_size', type=int, default=200, help='batch size')
 args = parser.parse_args()
 
@@ -33,16 +33,15 @@ def test(model, loader, attack=None):
     return 100.0 * correct / total
 
 model = PreActResNet18().cuda()
-model = nn.DataParallel(model,device_ids=device_ids)
-model = model.to(device_ids[0])
+#model = nn.DataParallel(model,device_ids=device_ids)
+model = model.to(device)
 checkpoint = torch.load(args.model_path)
 model.load_state_dict(checkpoint['model'])
 Batch = 128
 
 
 trainloader, testloader = New_ImageNet_get_loaders_64('../../data/tiny-imagenet-200', Batch)
-#pgd_attack_5 = LinfPGDAttack(model, loss_fn=torch.nn.CrossEntropyLoss(), eps=8/255, nb_iter=10, eps_iter=2/255,
-#                           rand_init=True, clip_min=0.0, clip_max=1.0)
+
 
 '''
 models_directory = './TRADES_tiny_preact'
@@ -57,10 +56,8 @@ for model_file in model_files:
     acc_pgd_5 = test(model, testloader, pgd_attack_5)
     print(f"PGD-5 accuracy: {acc_pgd_5:.2f}%")
 '''
-# 加载模型
 
 
-# 加载测试数据集
 
 
 #testset = torchvision.datasets.CIFAR100(root='../data', train=False, download=True, transform=torchvision.transforms.ToTensor())
