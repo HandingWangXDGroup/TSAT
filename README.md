@@ -31,7 +31,7 @@ Python3、Pytorch1.8.1、numpy
 - On CIFAR
 
   ``
-  python evaluate.py --data_type cifar10 --model_path result/model_ResNet18_cifar10 --model ResNet18
+  python evaluate.py --data_type cifar10 --model_path ./result/model_PreActResNet18_cifar10/ckpt.0 --model_type PreActResNet18
   ``
 
 - On Tiny-ImageNet
