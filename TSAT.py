@@ -11,8 +11,6 @@ import os
 import random
 import argparse
 import numpy as np
-import foolbox as fb
-import cv2 as cv
 from tqdm import tqdm
 from model_zoo import *
 #from apex import amp # accurate with mixed precision training
