@@ -1,22 +1,24 @@
 import torch
 import torchvision
+import torchvision.transforms as transforms
 import numpy as np
 import argparse
 from advertorch.attacks import LinfPGDAttack, CarliniWagnerL2Attack
 from autoattack import AutoAttack
-#from model_zoo import *
+from model_zoo import *
 import os
-from TinyImageNet_utils import *
-from TinyImageNet_models import *
+#from TinyImageNet_utils import *
+#from TinyImageNet_models import *
 
 #device_ids = [0,2,3]
-#torch.cuda.set_device(device_ids[0])
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # 设置参数
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default='./TRADES_tiny_preact/model_preact.13', help='model path')
-parser.add_argument('--model', type=str, default='ResNet18', help='model type',choices=['ResNet18', 'PreActResNet18','WideResNet28-10'])
+parser.add_argument('--model_path', type=str, default='./result/model_PreActResNet18_cifar10/ckpt.0', help='model path')
+parser.add_argument('--model_type', type=str, default='ResNet18', help='model type',choices=['ResNet18', 'PreActResNet18','WideResNet28-10'])
 parser.add_argument('--data_type', type=str, default='cifar10',choices=['cifar10', 'cifar100'])
+parser.add_argument('--data_dir',default='../data',type=str)
 parser.add_argument('--batch_size', type=int, default=200, help='batch size')
 args = parser.parse_args()
 
@@ -104,7 +106,7 @@ pgd_attack_20 = LinfPGDAttack(model, loss_fn=torch.nn.CrossEntropyLoss(), eps=8/
                            rand_init=True, clip_min=0.0, clip_max=1.0)
 pgd_attack_50 = LinfPGDAttack(model, loss_fn=torch.nn.CrossEntropyLoss(), eps=8/255, nb_iter=50, eps_iter=2/255,
                            rand_init=True, clip_min=0.0, clip_max=1.0)
-cw_attack = CarliniWagnerL2Attack(model, num_classes=200, max_iterations=20, confidence=0, learning_rate=0.01,
+cw_attack = CarliniWagnerL2Attack(model, num_classes=num_classes, max_iterations=20, confidence=0, learning_rate=0.01,
                                   binary_search_steps=10, initial_const=0.001, clip_min=0.0, clip_max=1.0)
 #aa_attack = AutoAttack(model, norm='Linf', eps=8/255, version='standard', seed=0)
 
