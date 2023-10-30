@@ -55,10 +55,8 @@ class CustomLossFunction:
 def label_smoothing(onehot, n_classes, factor):
     return onehot * factor + (onehot - 1) * ((factor - 1)/(n_classes - 1))
     
-def pgd_linf(model, X, y, epsilon=8 / 255, alpha=2 / 255, num_iter=20, randomize=False, conti=False, initial=None):
-    if conti == True:
-        delta = initial
-    elif randomize:
+def pgd_linf(model, X, y, epsilon=8 / 255, alpha=2 / 255, num_iter=20, randomize=False):
+    if randomize:
         delta = torch.rand_like(X, requires_grad=True)
         delta.data = delta.data * 2 * epsilon - epsilon
     else:
