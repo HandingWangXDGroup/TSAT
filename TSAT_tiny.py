@@ -11,8 +11,6 @@ import os
 import random
 import argparse
 import numpy as np
-import foolbox as fb
-import cv2 as cv
 from tqdm import tqdm
 from TinyImageNet_models import *
 from TinyImageNet_utils import *
