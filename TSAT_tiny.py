@@ -168,7 +168,7 @@ def train(epoch):
         #Generate two kinds of partially perturbed samples and corresponding labels
         lamda1 = np.random.uniform()
         P_image,P_image_reverse,ti,ti_reverse = mask_label(inputs,onehot,delta,lamda1)
-        lamda2_x = torch.from_numpy(np.random.beta(1, 1, [args.batch_size, 1, 1, 1])).float().to(device)
+        lamda2_x = torch.from_numpy(np.random.beta(1, 1, [inputs.size(0), 1, 1, 1])).float().to(device)
         lamda2_y = lamda2_x.view(inputs.size(0), -1)
         #data mixing
         X = lamda2_x*P_image+(1-lamda2_x)*P_image_reverse
