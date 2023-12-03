@@ -22,7 +22,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 def get_args():
     parser = argparse.ArgumentParser('TSAT')
     parser.add_argument('--batch_size',default=128,type=int)
-    parser.add_argument('--data_dir',default='../data',type=str)
+    parser.add_argument('--data_dir',default='../data/tiny-imagenet-200',type=str)
     parser.add_argument('--data_type',default='Tiny-ImageNet',type=str)
     parser.add_argument('--out_dir',default='result',type=str,help='Output directory')
     parser.add_argument('--initial_lr',default=0.1,type=float,help='initial learning rate')
@@ -106,7 +106,7 @@ def mask_label(images,labels,delta,lamda1):
 
     mask = mask.to(device)
     lamda1_hat = torch.sum(mask.squeeze(1),dim = [1,2])/(H*W)
-    lamda1_hat = torch.reshape(lamda1_hat,(args.batch_size,1)).repeat(1,num_classes)
+    lamda1_hat = torch.reshape(lamda1_hat,(batch,1)).repeat(1,num_classes)
     P_image = images + delta*mask
     P_image_reverse = images + delta*(1-mask)
     ti = lamda1_hat*labels+(1-lamda1_hat)*(1-labels)*(1/(labels.shape[1]-1))
